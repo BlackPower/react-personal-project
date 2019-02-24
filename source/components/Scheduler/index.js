@@ -8,11 +8,16 @@ import Styles from './styles.m.css';
 import { api } from '../../REST'; // ! Импорт модуля API должен иметь именно такой вид (import { api } from '../../REST')
 
 export default class Scheduler extends Component {
+    state = {
+        isSpinning: false,
+    }
 
     render () {
+        const { isSpinning } = this.state;
+
         return (
             <section className = { Styles.scheduler }>
-                <Spinner />
+                <Spinner isSpinning = { isSpinning } />
                 <main>
                     <header>
                         <h1>Планировщик задач</h1>
