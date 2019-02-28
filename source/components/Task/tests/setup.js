@@ -75,11 +75,11 @@ const spies = {
         result.instance(),
         '_toggleTaskFavoriteState',
     ),
-    _removeTaskSpy:     jest.spyOn(result.instance(), '_removeTask'),
-    _taskInputFocusSpy: jest.spyOn(
-        result.instance().taskInput.current,
-        'focus',
-    ),
+    _removeTaskSpy: jest.spyOn(result.instance(), '_removeTask'),
+    // _taskInputFocusSpy: jest.spyOn(
+    //     result.instance().taskInput.current,
+    //     'focus',
+    // ),
 };
 
 export {
