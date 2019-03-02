@@ -18,7 +18,6 @@ export default class Task extends PureComponent {
         favorite:         bool.isRequired,
         id:               string.isRequired,
         message:          string.isRequired,
-        modified:         string.isRequired,
     }
 
     constructor (props) {
@@ -116,6 +115,10 @@ export default class Task extends PureComponent {
         });
         if (isEditing) {
             this.taskInput.current.focus();
+            const val = this.taskInput.current.value;
+
+            this.taskInput.current.value = ''; //clear the value of the element
+            this.taskInput.current.value = val; //set that value back.
         }
     };
 
@@ -138,16 +141,20 @@ export default class Task extends PureComponent {
     };
 
     render () {
-        const { completed } = this.props;
+        const { completed, favorite } = this.props;
         const { newMessage, isTaskEditing } = this.state;
+
+        console.log('Task.props', this.props);
 
         return (
             <li className = { Styles.task }>
                 <div className = { Styles.content }>
                     <Checkbox
+                        inlineBlock
                         checked = { completed }
                         className = { Styles.toggleTaskCompletedState }
-                        inlineBlock
+                        color1 = '#3B8EF3'
+                        color2 = '#FFF'
                         onClick = { this._toggleTaskCompletedState }
                     />
                     <input
@@ -162,15 +169,26 @@ export default class Task extends PureComponent {
                 </div>
                 <div className = { Styles.actions }>
                     <Star
+                        inlineBlock
+                        checked = { favorite }
                         className = { Styles.toggleTaskFavoriteState }
+                        color1 = '#3B8EF3'
+                        color2 = '#000'
                         onClick = { this._toggleTaskFavoriteState }
                     />
                     <Edit
+                        inlineBlock
+                        checked = { isTaskEditing }
                         className = { Styles.updateTaskMessageOnClick }
+                        color1 = '#3B8EF3'
+                        color2 = '#000'
                         onClick = { this._updateTaskMessageOnClick }
                     />
                     <Remove
+                        inlineBlock
                         className = { Styles.removeTask }
+                        color1 = '#3B8EF3'
+                        color2 = '#000'
                         onClick = { this._removeTask }
                     />
                 </div>

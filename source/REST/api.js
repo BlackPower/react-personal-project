@@ -1,4 +1,5 @@
 import { MAIN_URL, TOKEN } from './config';
+import { BaseTaskModel } from 'instruments';
 export const api = {
     async fetchTasks () {
         const response = await fetch(MAIN_URL, {
@@ -14,50 +15,76 @@ export const api = {
             return tasks;
         }
 
-        return new []();
+        return [];
     },
 
-    async createTask (task) {
+    async createTask (taskMessage) {
         const response = await fetch(MAIN_URL, {
-            method:  'GET',
+            method:  'POST',
             headers: {
-                Authorization: TOKEN,
+                'Content-Type': 'application/json',
+                Authorization:  TOKEN,
             },
+            body: JSON.stringify({ message: taskMessage }),
         });
 
-        console.log(response);
+        if (response.ok) {
+            const { data: task } = await response.json();
+
+            return task;
+        }
+
+        return [];
     },
 
     async updateTask (task) {
         const response = await fetch(MAIN_URL, {
-            method:  'GET',
+            method:  'PUT',
             headers: {
-                Authorization: TOKEN,
+                'Content-Type': 'application/json',
+                Authorization:  TOKEN,
             },
+            body: JSON.stringify([task]),
         });
 
-        console.log(response);
+        if (response.ok) {
+            const { data: tasks } = await response.json();
+
+            return tasks;
+        }
+
+        return [];
     },
 
-    async removeTask (task) {
-        const response = await fetch(MAIN_URL, {
-            method:  'GET',
+    async removeTask (id) {
+        await fetch(`${MAIN_URL}/${id}`, {
+            method:  'DELETE',
             headers: {
                 Authorization: TOKEN,
             },
         });
-
-        console.log(response);
     },
 
     async completeAllTasks (tasks) {
-        const response = await fetch(MAIN_URL, {
-            method:  'GET',
-            headers: {
-                Authorization: TOKEN,
-            },
+        const tastModels = tasks.map((task) =>
+            new BaseTaskModel(
+                task.id,
+                true,
+                task.favorite,
+                task.message
+            ));
+
+        const fetchs = tastModels.map((task) => {
+            fetch(MAIN_URL, {
+                method:  'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization:  TOKEN,
+                },
+                body: JSON.stringify([task]),
+            });
         });
 
-        console.log(response);
+        await Promise.all(fetchs);
     },
 };

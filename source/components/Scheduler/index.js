@@ -7,92 +7,42 @@ import Checkbox from 'theme/assets/Checkbox';
 import { BaseTaskModel } from 'instruments';
 // Instruments
 import Styles from './styles.m.css';
-import { api, MAIN_URL, TOKEN } from '../../REST'; // ! Импорт модуля API должен иметь именно такой вид (import { api } from '../../REST')
+import { api } from '../../REST'; // ! Импорт модуля API должен иметь именно такой вид (import { api } from '../../REST')
 
 export default class Scheduler extends Component {
     state = {
         newTaskMessage:  '',
         tasksFilter:     '',
         isTasksFetching: false,
-        tasks:           [{
-            id:        '1',
-            completed: false,
-            favorite:  false,
-            message:   'task 1',
-        }, {
-            id:        '2',
-            completed: true,
-            favorite:  true,
-            message:   'task 2',
-        }],
-
+        tasks:           [],
     }
 
     componentDidMount () {
-        // const { currentUserFirstName, currentUserLastName } = this.props;
-
-        // this._fetchPosts();
-
-        // socket.emit('join', GROUP_ID);
-
-        // socket.on('create', (postJSON) => {
-        //     const { data: createdPost, meta } = JSON.parse(postJSON);
-
-        //     if (
-        //         `${currentUserFirstName} ${currentUserLastName}`
-        //         !== `${meta.authorFirstName} ${meta.authorLastName}`
-        //     ) {
-        //         this.setState(({ posts }) => ({
-        //             posts: [ createdPost, ...posts ],
-        //         }));
-        //     }
-        // });
-
-        // socket.on('remove', (postJSON) => {
-        //     const { data: removedPost, meta } = JSON.parse(postJSON);
-
-        //     if (
-        //         `${currentUserFirstName} ${currentUserLastName}`
-        //         !== `${meta.authorFirstName} ${meta.authorLastName}`
-        //     ) {
-        //         this.setState(({ posts }) => ({
-        //             posts: posts.filter((post) => post.id !== removedPost.id),
-        //         }));
-        //     }
-        // });
-
-        // socket.on('like', (postJSON) => {
-        //     const { data: likedPost, meta } = JSON.parse(postJSON);
-
-        //     if (
-        //         `${currentUserFirstName} ${currentUserLastName}`
-        //         !== `${meta.authorFirstName} ${meta.authorLastName}`
-        //     ) {
-        //         this.setState(({ posts }) => ({
-        //             posts: posts.map(
-        //                 (post) => post.id === likedPost.id ? likedPost : post,
-        //             ),
-        //         }));
-        //     }
-        // });
-    }
-
-    componentWillUnmount () {
-        //socket.removeListener('create');
+        this._fetchTasksAsync();
     }
 
     _removeTaskAsync = async (id) => {
         this._setTasksFetchingState(true);
+        await api.removeTask(id);
         this.setState(({ tasks }) => ({
             tasks: tasks.filter((task) => task.id !== id),
         }));
-        await api.fetchTasks(MAIN_URL, TOKEN);
         this._setTasksFetchingState(false);
     }
 
-    _updateTaskAsync = (task) => {
+    _updateTaskAsync = async (task) => {
         this._setTasksFetchingState(true);
+        const updatedTasks = await api.updateTask(task);
 
+        console.log(updatedTasks);
+        if (updatedTasks.length > 0) {
+            const updatedTask = updatedTasks[0];
+
+            console.log(updatedTask);
+            this.setState(({ tasks }) => ({
+                tasks: tasks.map((item) => item.id === updatedTask.id ? updatedTask : item),
+            }));
+        }
         this._setTasksFetchingState(false);
     }
 
@@ -120,37 +70,53 @@ export default class Scheduler extends Component {
         });
     }
 
-    _fetchTasksAsync = () => {
+    _fetchTasksAsync = async () => {
         this._setTasksFetchingState(true);
+        const tasks = await api.fetchTasks();
 
+        this.setState({
+            tasks,
+        });
         this._setTasksFetchingState(false);
     }
 
-    _createTaskAsync = (event) => {
+    _createTaskAsync = async (event) => {
         const { newTaskMessage } = this.state;
 
         event.preventDefault();
         if (newTaskMessage) {
             this._setTasksFetchingState(true);
+            const newTask = await api.createTask(newTaskMessage);
 
             this._setTasksFetchingState(false);
-            this.setState({
+            this.setState(({ tasks }) => ({
                 newTaskMessage: '',
-            });
+                tasks:          [newTask, ...tasks],
+            }));
         }
 
         return null;
     }
 
-    _completeAllTasksAsync = () => {
-        const isAllCompleted = this._getAllCompleted;
+    _completeAllTasksAsync = async () => {
+        const isAllCompleted = this._getAllCompleted();
 
-        if (!isAllCompleted) {
-            this._setTasksFetchingState(true);
-            this._setTasksFetchingState(false);
+        if (isAllCompleted) {
+            return null;
         }
+        this._setTasksFetchingState(true);
+        const { tasks } = this.state;
+        const completedTasks = tasks.filter((task) => task.completed);
+        const uncomletedTasts = tasks.filter((task) => !task.completed);
 
-        return null;
+        await api.completeAllTasks(uncomletedTasts);
+        for (let index = 0; index < uncomletedTasts.length; index++) {
+            uncomletedTasts[index].completed = true;
+        }
+        this.setState({
+            tasks: [...uncomletedTasts, ...completedTasks],
+        });
+        this._setTasksFetchingState(false);
     }
 
     render () {
@@ -204,7 +170,7 @@ export default class Scheduler extends Component {
                     </section>
 
                     <footer>
-                        <Checkbox onClick = { this._completeAllTasks } />
+                        <Checkbox onClick = { this._completeAllTasksAsync } />
                         <span className = { Styles.completeAllTasks }>
                             Все задачи выполнены
                         </span>
