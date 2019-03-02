@@ -4,21 +4,21 @@ import Checkbox from 'theme/assets/Checkbox';
 import Star from 'theme/assets/Star';
 import Edit from 'theme/assets/Edit';
 import Remove from 'theme/assets/Remove';
-import PropTypes from 'prop-types';
+import { func, bool, string } from 'prop-types';
 
 // Instruments
 import Styles from './styles.m.css';
 
 export default class Task extends PureComponent {
     static propTypes = {
-        _removeTaskAsync: PropTypes.func.isRequired,
-        _updateTaskAsync: PropTypes.func.isRequired,
-        completed:        PropTypes.bool.isRequired,
-        created:          PropTypes.string.isRequired,
-        favorite:         PropTypes.bool.isRequired,
-        id:               PropTypes.string.isRequired,
-        message:          PropTypes.string.isRequired,
-        modified:         PropTypes.string.isRequired,
+        _removeTaskAsync: func.isRequired,
+        _updateTaskAsync: func.isRequired,
+        completed:        bool.isRequired,
+        created:          string.isRequired,
+        favorite:         bool.isRequired,
+        id:               string.isRequired,
+        message:          string.isRequired,
+        modified:         string.isRequired,
     }
 
     constructor (props) {
@@ -49,7 +49,19 @@ export default class Task extends PureComponent {
     };
 
     _updateTask = () => {
+        const { message, _updateTaskAsync } = this.props;
+        const { newMessage } = this.state;
+
+        if (message.localeCompare(newMessage)) {
+            const task = this._getTaskShape({
+                message: newMessage,
+            });
+
+            _updateTaskAsync(task);
+        }
         this._setTaskEditingState(false);
+
+        return null;
     };
 
     _updateNewTaskMessage = (event) => {
@@ -63,31 +75,40 @@ export default class Task extends PureComponent {
 
         if (isTaskEditing) {
             this._updateTask();
+        } else {
+            this._setTaskEditingState(!isTaskEditing);
         }
-        this._setTaskEditingState(!isTaskEditing);
+
+        return null;
     };
 
     _updateTaskMessageOnKeyDown = (event) => {
         const { newMessage } = this.state;
 
-        console.log(event.key);
         switch (event.key) {
             case 'Enter':
-                event.preventDefault();
                 if (newMessage) {
                     this._updateTask();
                 }
                 break;
             case 'Escape':
-                event.preventDefault();
                 this._cancelUpdatingTaskMessage();
                 break;
             default:
                 break;
         }
+
+        return null;
     };
 
-    _cancelUpdatingTaskMessage = () => {};
+    _cancelUpdatingTaskMessage = () => {
+        const { message } = this.props;
+
+        this.setState({
+            isTaskEditing: false,
+            newMessage:    message,
+        });
+    };
 
     _setTaskEditingState = (isEditing) => {
         this.setState({
@@ -136,7 +157,7 @@ export default class Task extends PureComponent {
                         type = 'text'
                         value = { newMessage }
                         onChange = { this._updateNewTaskMessage }
-                        onKeyPress = { this._updateTaskMessageOnKeyDown }
+                        onKeyDown = { this._updateTaskMessageOnKeyDown }
                     />
                 </div>
                 <div className = { Styles.actions }>
