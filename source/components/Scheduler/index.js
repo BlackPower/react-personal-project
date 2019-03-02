@@ -7,9 +7,7 @@ import Checkbox from 'theme/assets/Checkbox';
 import { BaseTaskModel } from 'instruments';
 // Instruments
 import Styles from './styles.m.css';
-import { api } from '../../REST'; // ! Импорт модуля API должен иметь именно такой вид (import { api } from '../../REST')
-import { async } from 'q';
-import { testMessage1 } from './tests/setup';
+import { api, MAIN_URL, TOKEN } from '../../REST'; // ! Импорт модуля API должен иметь именно такой вид (import { api } from '../../REST')
 
 export default class Scheduler extends Component {
     state = {
@@ -83,11 +81,12 @@ export default class Scheduler extends Component {
         //socket.removeListener('create');
     }
 
-    _removeTaskAsync = (id) => {
+    _removeTaskAsync = async (id) => {
         this._setTasksFetchingState(true);
         this.setState(({ tasks }) => ({
             tasks: tasks.filter((task) => task.id !== id),
         }));
+        await api.fetchTasks(MAIN_URL, TOKEN);
         this._setTasksFetchingState(false);
     }
 
