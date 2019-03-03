@@ -115,10 +115,6 @@ export default class Task extends PureComponent {
         });
         if (isEditing) {
             this.taskInput.current.focus();
-            const val = this.taskInput.current.value;
-
-            this.taskInput.current.value = ''; //clear the value of the element
-            this.taskInput.current.value = val; //set that value back.
         }
     };
 
