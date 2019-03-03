@@ -4,7 +4,7 @@ import React, { Component } from 'react';
 import Spinner from 'components/Spinner';
 import Task from 'components/Task';
 import Checkbox from 'theme/assets/Checkbox';
-import { BaseTaskModel } from 'instruments';
+import { sortTasksByGroup } from 'instruments';
 // Instruments
 import Styles from './styles.m.css';
 import { api } from '../../REST'; // ! Импорт модуля API должен иметь именно такой вид (import { api } from '../../REST')
@@ -34,11 +34,9 @@ export default class Scheduler extends Component {
         this._setTasksFetchingState(true);
         const updatedTasks = await api.updateTask(task);
 
-        console.log(updatedTasks);
         if (updatedTasks.length > 0) {
             const updatedTask = updatedTasks[0];
 
-            console.log(updatedTask);
             this.setState(({ tasks }) => ({
                 tasks: tasks.map((item) => item.id === updatedTask.id ? updatedTask : item),
             }));
@@ -119,14 +117,12 @@ export default class Scheduler extends Component {
         this._setTasksFetchingState(false);
     }
 
-    render () {
-        const {
-            isTasksFetching,
-            tasks,
-            newTaskMessage,
-            tasksFilter } = this.state;
+    _getTasksJSX = () => {
+        const { tasks, tasksFilter } = this.state;
+        const filteredTasks = tasks.filter((task) => task.message.includes(tasksFilter));
+        const groupedTasks = sortTasksByGroup(filteredTasks);
 
-        const tasksJSX = tasks.map((task) => {
+        return groupedTasks.map((task) => {
             return (
                 <Task
                     _removeTaskAsync = { this._removeTaskAsync }
@@ -136,6 +132,16 @@ export default class Scheduler extends Component {
                 />
             );
         });
+    }
+
+    render () {
+        const {
+            isTasksFetching,
+            tasks,
+            newTaskMessage,
+            tasksFilter } = this.state;
+        const iaAllTasksCompleted = this._getAllCompleted() && tasks.length > 0;
+        const tasksJSX = this._getTasksJSX();
 
         return (
             <section className = { Styles.scheduler }>
@@ -170,7 +176,13 @@ export default class Scheduler extends Component {
                     </section>
 
                     <footer>
-                        <Checkbox onClick = { this._completeAllTasksAsync } />
+                        <Checkbox
+                            inlineBlock
+                            checked = { iaAllTasksCompleted }
+                            color1 = '#3B8EF3'
+                            color2 = '#FFF'
+                            onClick = { this._completeAllTasksAsync }
+                        />
                         <span className = { Styles.completeAllTasks }>
                             Все задачи выполнены
                         </span>

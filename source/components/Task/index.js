@@ -8,13 +8,13 @@ import { func, bool, string } from 'prop-types';
 
 // Instruments
 import Styles from './styles.m.css';
+import cx from 'classnames';
 
 export default class Task extends PureComponent {
     static propTypes = {
         _removeTaskAsync: func.isRequired,
         _updateTaskAsync: func.isRequired,
         completed:        bool.isRequired,
-        created:          string.isRequired,
         favorite:         bool.isRequired,
         id:               string.isRequired,
         message:          string.isRequired,
@@ -144,10 +144,12 @@ export default class Task extends PureComponent {
         const { completed, favorite } = this.props;
         const { newMessage, isTaskEditing } = this.state;
 
-        console.log('Task.props', this.props);
+        const taskStyle = cx(Styles.task, {
+            [Styles.completed]: completed,
+        });
 
         return (
-            <li className = { Styles.task }>
+            <li className = { taskStyle }>
                 <div className = { Styles.content }>
                     <Checkbox
                         inlineBlock
@@ -164,6 +166,12 @@ export default class Task extends PureComponent {
                         type = 'text'
                         value = { newMessage }
                         onChange = { this._updateNewTaskMessage }
+                        onFocus = { function (e) {
+                            const val = e.target.value;
+
+                            e.target.value = '';
+                            e.target.value = val;
+                        } }
                         onKeyDown = { this._updateTaskMessageOnKeyDown }
                     />
                 </div>
