@@ -112,10 +112,11 @@ export default class Task extends PureComponent {
     _setTaskEditingState = (isEditing) => {
         this.setState({
             isTaskEditing: isEditing,
+        }, () => {
+            if (isEditing) {
+                this.taskInput.current.focus();
+            }
         });
-        if (isEditing) {
-            this.taskInput.current.focus();
-        }
     };
 
     _toggleTaskCompletedState = () => {
