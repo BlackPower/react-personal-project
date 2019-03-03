@@ -166,12 +166,6 @@ export default class Task extends PureComponent {
                         type = 'text'
                         value = { newMessage }
                         onChange = { this._updateNewTaskMessage }
-                        onFocus = { function (e) {
-                            const val = e.target.value;
-
-                            e.target.value = '';
-                            e.target.value = val;
-                        } }
                         onKeyDown = { this._updateTaskMessageOnKeyDown }
                     />
                 </div>

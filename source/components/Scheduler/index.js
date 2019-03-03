@@ -1,5 +1,6 @@
 // Core
 import React, { Component } from 'react';
+import FlipMove from 'react-flip-move';
 
 import Spinner from 'components/Spinner';
 import Task from 'components/Task';
@@ -170,17 +171,18 @@ export default class Scheduler extends Component {
                         </form>
                         <div className = { Styles.overlay } >
                             <ul>
-                                { tasksJSX }
+                                <FlipMove duration = { 400 }>
+                                    { tasksJSX }
+                                </FlipMove>
                             </ul>
                         </div>
                     </section>
 
                     <footer>
                         <Checkbox
-                            inlineBlock
                             checked = { iaAllTasksCompleted }
-                            color1 = '#3B8EF3'
-                            color2 = '#FFF'
+                            color1 = '#363636'
+                            color2 = '#fff'
                             onClick = { this._completeAllTasksAsync }
                         />
                         <span className = { Styles.completeAllTasks }>
